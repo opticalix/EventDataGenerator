@@ -44,4 +44,21 @@ object ApacheLogGenerator {
     val host = hosts(new Random().nextInt(hosts.length))
     s"$method $host $protocol"
   }
+
+  def runIpGenerator(): Unit = {
+    //    ip
+    //    print(ApacheLogGenerator.provideSingleIP())
+    //
+    //    time
+    //    val currDate = LocalDate.now()
+    //    val zoneId = ZoneId.systemDefault()
+    //    val millis = Duration.ofSeconds(3).get(ChronoUnit.SECONDS).toInt * 1000
+    //    val todayStartTime = LocalDateTime.of(currDate.getYear,currDate.getMonthValue,currDate.getDayOfMonth, 0, 0)
+    //    for (v <- 1 to 50)
+    //      println(ApacheLogGenerator.provideSingleFormatTime("dd/MMM/yyyy:HH:mm:ss Z", todayStartTime, millis))
+    //
+    //    http
+    //    for (v <- 1 to 50)
+    //      println(ApacheLogGenerator.provideHttpInfo())
+  }
 }
