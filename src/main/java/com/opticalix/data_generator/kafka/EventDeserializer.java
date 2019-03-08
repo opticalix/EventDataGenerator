@@ -1,6 +1,6 @@
 package com.opticalix.data_generator.kafka;
 
-import com.opticalix.data_generator.pojo.SmartHomeRawEvent;
+import com.opticalix.common.pojo.SmartHomeRawEvent;
 
 /**
  * @author Felix

@@ -1,6 +1,6 @@
 package com.opticalix.data_generator.kafka;
 
-import com.opticalix.data_generator.pojo.SmartHomeRawEvent;
+import com.opticalix.common.pojo.SmartHomeRawEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;

@@ -2,8 +2,9 @@ package com.opticalix.data_generator
 
 import java.io.File
 
+import com.opticalix.common.utils.JavaUtils
 import com.opticalix.data_generator.kafka.{KafkaConfig, KafkaManager}
-import com.opticalix.data_generator.utils.{JavaUtils, Utils}
+import com.opticalix.data_generator.utils.Utils
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 

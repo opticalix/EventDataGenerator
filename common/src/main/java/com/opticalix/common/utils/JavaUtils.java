@@ -1,4 +1,4 @@
-package com.opticalix.data_generator.utils;
+package com.opticalix.common.utils;
 
 /**
  * @author Felix

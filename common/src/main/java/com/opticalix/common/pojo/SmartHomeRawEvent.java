@@ -1,4 +1,4 @@
-package com.opticalix.data_generator.pojo;
+package com.opticalix.common.pojo;
 
 import java.io.Serializable;
 
