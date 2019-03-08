@@ -24,6 +24,7 @@ object Generator {
     * /Users/admin/Downloads/train.csv 61k
     * /Users/admin/Documents/Felix/master/dataset/test_20_ascend.csv
     *
+    * TODO 看需要优化哪些（kafka消费速度、控制disorder开关--用MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION可实现、arg传map）
     * @param args args
     */
   def runEventGenerator(args: Array[String]) = {
@@ -55,7 +56,6 @@ object Generator {
 
       KafkaManager.setConfig(bs, topic)
       val producer = KafkaManager.runProducer()
-      val consumer = KafkaManager.runConsumer()
 
       //read file
       //check mem cost. Do not read all text in mem
@@ -73,8 +73,13 @@ object Generator {
       val costSec = (endTime - startTime) / 1000f
       System.out.println(s"Read stage: delayNano=${delayNano}ns, realTps=${cnt / costSec.toFloat}, totalCostTime=${costSec}s, endTime=${Utils.formatTimeNewApi(System.currentTimeMillis(), "yyyy-MM-dd HH:mm:ss.SSS")}")
 
-      consumer.setTotalRecordSentCnt(cnt)
-//      System.exit(0)
+      val runConsumer = false
+      if (runConsumer) {
+        val consumer = KafkaManager.runConsumer()
+        consumer.setTotalRecordSentCnt(cnt)
+      } else {
+        System.exit(0)
+      }
     }
     catch {
       case e: ArgumentParserException =>
