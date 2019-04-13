@@ -7,5 +7,5 @@ import com.opticalix.common.pojo.SmartHomeRawEvent;
  * @date 18/02/2019 11:54 AM
  * @email opticalix@gmail.com
  */
-public class EventSerializer extends BaseJsonSerializer<SmartHomeRawEvent> {
+public class SmartHomeEventSerializer extends BaseJsonSerializer<SmartHomeRawEvent> {
 }

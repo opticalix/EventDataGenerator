@@ -1,19 +1,14 @@
 package com.opticalix.data_generator.kafka;
 
+import com.opticalix.common.pojo.ManufactureEvent;
 import com.opticalix.common.pojo.SmartHomeRawEvent;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import com.opticalix.common.utils.IOUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.LongSerializer;
 
-import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 
 /**
  * @author Felix
@@ -22,6 +17,7 @@ import java.util.concurrent.Executors;
  */
 public class KafkaManager {
 
+    @Deprecated
     public static void setConfig(String... configs) {
         if (configs.length > 0) {
             KafkaConfig.setKafkaBrokers(configs[0]);
@@ -29,17 +25,28 @@ public class KafkaManager {
         if (configs.length > 1) {
             KafkaConfig.setTopicName(configs[1]);
         }
-        KafkaConfig.printConfigInfo();
     }
 
-    public static KafkaProducer<Long, SmartHomeRawEvent> runProducer() {
+    public static void setProducerConfigPath(String path) {
+        KafkaConfig.setKafkaProducerConfigPath(path);
+    }
+
+    public static void setConsumerConfigPath(String path) {
+        KafkaConfig.setKafkaConsumerConfigPath(path);
+    }
+
+    public static void setTopic(String topic) {
+        KafkaConfig.setTopicName(topic);
+    }
+
+    public static <EventType> KafkaProducer<Long, EventType> runProducer() {
         return createProducer();
     }
 
-    public static void produceRecord(KafkaProducer<Long, SmartHomeRawEvent> producer, String line) {
+    public static void produceSmartHomeRecord(KafkaProducer<Long, SmartHomeRawEvent> producer, String line) {
         if (producer == null)
             return;
-        ProducerRecord<Long, SmartHomeRawEvent> record = new ProducerRecord<Long, SmartHomeRawEvent>(KafkaConfig.TOPIC_NAME, convert2Event(line));
+        ProducerRecord<Long, SmartHomeRawEvent> record = new ProducerRecord<>(KafkaConfig.TOPIC_NAME, SmartHomeRawEvent.convert2SmartHomeEvent(line));
         try {
             RecordMetadata metadata = producer.send(record).get();
             System.out.println("Record sent with key " + record.key() + " to partition " + metadata.partition()
@@ -51,60 +58,25 @@ public class KafkaManager {
         }
     }
 
-    //problem: consumer config is printed, but 'createConsumer' not print. need try-catch to show exception msg
-    public static EventConsumer runConsumer() {
-        EventConsumer consumer = createConsumer();
-        if (consumer != null) {
-            Executors.newSingleThreadExecutor().submit(consumer);
-        }
-        return consumer;
-    }
-
-    public static SmartHomeRawEvent convert2Event(String rawLine) {
-        String comma = ",";
-        String[] split = rawLine.split(comma);
-        long id = Long.parseLong(split[0]);
-        long timestamp = Long.parseLong(split[1]);
-        float value = Float.parseFloat(split[2]);
-        byte property = Byte.parseByte(split[3]);
-        int plugId = Integer.parseInt(split[4]);
-        int householdId = Integer.parseInt(split[5]);
-        int houseId = Integer.parseInt(split[6]);
-        return new SmartHomeRawEvent(id, timestamp, value, property, plugId, householdId, houseId);
-    }
-
-    public static EventConsumer createConsumer() {
-        Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_BROKERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, KafkaConfig.GROUP_ID);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "com.opticalix.data_generator.kafka.EventDeserializer");
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, KafkaConfig.MAX_POLL_RECORDS);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.FALSE);
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, KafkaConfig.OFFSET_RESET_LATEST);
+    public static void produceManufactureRecord(KafkaProducer<Long, ManufactureEvent> producer, String line) {
+        if (producer == null)
+            return;
+        ProducerRecord<Long, ManufactureEvent> record = new ProducerRecord<>(KafkaConfig.TOPIC_NAME, ManufactureEvent.convert2ManufactureEvent(line));
         try {
-            EventConsumer consumer = new EventConsumer(props);
-            consumer.subscribe(Collections.singletonList(KafkaConfig.TOPIC_NAME));
-            System.out.println("createConsumer success");
-            return consumer;
-        } catch (Exception e) {
-            System.out.println("createConsumer fail");
+            RecordMetadata metadata = producer.send(record).get();
+            System.out.println("Record sent with key " + record.key() + " to partition " + metadata.partition()
+                    + " with offset " + metadata.offset());
+        }
+        catch (ExecutionException | InterruptedException e) {
+            System.out.println("Error in sending record");
             e.printStackTrace();
-            return null;
         }
     }
 
-    public static KafkaProducer<Long, SmartHomeRawEvent> createProducer() {
-        Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_BROKERS);
-        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, Boolean.TRUE);
-//        props.put(ProducerConfig.CLIENT_ID_CONFIG, KafkaConfig.CLIENT_ID);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "com.opticalix.data_generator.kafka.EventSerializer");
-        props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);//>1 result in disorder
-//        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, CustomPartitioner.class.getName());
+    public static <EventType> KafkaProducer<Long, EventType> createProducer() {
+        Properties props = IOUtils.readProperties(KafkaConfig.KAFKA_PRODUCER_CONFIG_PATH);
         try {
-            KafkaProducer<Long, SmartHomeRawEvent> producer = new KafkaProducer<>(props);
+            KafkaProducer<Long, EventType> producer = new KafkaProducer<>(props);
             System.out.println("createProducer success");
             return producer;
         } catch (Exception e) {
@@ -113,4 +85,34 @@ public class KafkaManager {
             return null;
         }
     }
+
+    //problem: consumer config is printed, but 'createConsumer' not print. need try-catch to show exception msg
+//    public static EventConsumer runConsumer() {
+//        EventConsumer consumer = createConsumer();
+//        if (consumer != null) {
+//            Executors.newSingleThreadExecutor().submit(consumer);
+//        }
+//        return consumer;
+//    }
+
+//    public static EventConsumer createConsumer() {
+//        Properties props = new Properties();
+//        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_BROKERS);
+//        props.put(ConsumerConfig.GROUP_ID_CONFIG, KafkaConfig.GROUP_ID);
+//        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
+//        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "com.opticalix.data_generator.kafka.EventDeserializer");
+//        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, KafkaConfig.MAX_POLL_RECORDS);
+//        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.FALSE);
+//        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, KafkaConfig.OFFSET_RESET_LATEST);
+//        try {
+//            EventConsumer consumer = new EventConsumer(props);
+//            consumer.subscribe(Collections.singletonList(KafkaConfig.TOPIC_NAME));
+//            System.out.println("createConsumer success");
+//            return consumer;
+//        } catch (Exception e) {
+//            System.out.println("createConsumer fail");
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
 }

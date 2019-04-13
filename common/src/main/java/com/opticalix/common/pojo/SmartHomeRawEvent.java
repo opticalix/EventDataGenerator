@@ -103,4 +103,17 @@ public class SmartHomeRawEvent implements Serializable {
                 ", houseId=" + houseId +
                 '}';
     }
+
+    public static SmartHomeRawEvent convert2SmartHomeEvent(String rawLine) {
+        String comma = ",";
+        String[] split = rawLine.split(comma);
+        long id = Long.parseLong(split[0]);
+        long timestamp = Long.parseLong(split[1]);
+        float value = Float.parseFloat(split[2]);
+        byte property = Byte.parseByte(split[3]);
+        int plugId = Integer.parseInt(split[4]);
+        int householdId = Integer.parseInt(split[5]);
+        int houseId = Integer.parseInt(split[6]);
+        return new SmartHomeRawEvent(id, timestamp, value, property, plugId, householdId, houseId);
+    }
 }

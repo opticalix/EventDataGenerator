@@ -9,6 +9,8 @@ public class KafkaConfig {
     public static Integer MAX_POLL_RECORDS = 1;
     public static String OFFSET_RESET_LATEST = "latest";
     public static String OFFSET_RESET_EARLIEST = "earliest";
+    public static String KAFKA_PRODUCER_CONFIG_PATH;
+    public static String KAFKA_CONSUMER_CONFIG_PATH;
 
     public static void setKafkaBrokers(String kafkaBrokers) {
         KAFKA_BROKERS = kafkaBrokers;
@@ -18,21 +20,12 @@ public class KafkaConfig {
         TOPIC_NAME = topicName;
     }
 
-    public static void setClientId(String clientId) {
-        CLIENT_ID = clientId;
+    public static void setKafkaProducerConfigPath(String kafkaProducerConfigPath) {
+        KAFKA_PRODUCER_CONFIG_PATH = kafkaProducerConfigPath;
     }
 
-    public static void setGroupId(String groupId) {
-        GROUP_ID = groupId;
+    public static void setKafkaConsumerConfigPath(String kafkaConsumerConfigPath) {
+        KAFKA_CONSUMER_CONFIG_PATH = kafkaConsumerConfigPath;
     }
 
-    public static void printConfigInfo() {
-        System.out.println(
-                "printConfigInfo:\n" +
-                "KAFKA_BROKERS:" + KAFKA_BROKERS + ", " +
-                "TOPIC_NAME:" + TOPIC_NAME + ", " +
-                "GROUP_ID:" + GROUP_ID + ", " +
-                "CLIENT_ID:" + CLIENT_ID
-        );
-    }
 }

@@ -13,3 +13,10 @@ libraryDependencies += "org.apache.kafka" % "kafka-clients" % "2.0.0"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.8"
 libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.25"
 libraryDependencies += "com.opticalix" % "common" % "1.0-SNAPSHOT"
+
+assemblyMergeStrategy in assembly := {
+  case PathList(ps @ _*) if ps.last endsWith "module-info.class" => MergeStrategy.first
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
